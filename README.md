@@ -22,9 +22,9 @@ Some of the details of my implementation of the backend challenge:
   and hear their reasoning while they were conducting the challenge was really enlightning to better understand their thought process. Sadly, we cannot do
   this now due to COVID but I think this might be quite close.
 
-# Model diagram
+# Domain model
 
-![Model diagram](media/domain_model.png?raw=true)
+![Domain model](media/domain_model.png?raw=true)
 
 # YouTube Video
 
