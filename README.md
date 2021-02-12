@@ -24,7 +24,7 @@ Some of the details of my implementation of the backend challenge:
 
 # Model diagram
 
-![Model diagram](media/model_diagram.png)
+![Model diagram](media/domain_model.png?raw=true)
 
 # YouTube Video
 
