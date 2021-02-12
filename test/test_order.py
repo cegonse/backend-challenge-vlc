@@ -97,7 +97,7 @@ class TestOrder(unittest.TestCase):
         assert order.contains_physical_items is True
 
     def test_order_reports_it_contains_a_digital_subscription_item(self):
-        screwdriver = Item(
+        gogol_music = Item(
             type=ItemType.SUBSCRIPTION,
             price=10.0,
             name='Gogol Music'
@@ -107,8 +107,25 @@ class TestOrder(unittest.TestCase):
             shipping_address=self.address,
             billing_address=self.address,
             items=[
-                OrderItems(item=screwdriver, quantity=3)
+                OrderItems(item=gogol_music, quantity=3)
             ]
         )
 
         assert order.contains_subscriptions is True
+
+    def test_order_reports_it_contains_a_book(self):
+        book = Item(
+            type=ItemType.BOOK,
+            price=10.0,
+            name='Python for Dummies'
+        )
+        order = Order(
+            customer=self.customer,
+            shipping_address=self.address,
+            billing_address=self.address,
+            items=[
+                OrderItems(item=book, quantity=3)
+            ]
+        )
+
+        assert order.contains_books is True

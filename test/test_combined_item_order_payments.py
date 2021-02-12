@@ -17,33 +17,15 @@ from src.shipping_labels import ShippingLabel
 
 
 class TestCombinedItemOrderPayments(unittest.TestCase):
-    def test_processing_the_payment_of_an_order_containing_a_physical_item_and_a_subscription(self):
-        screwdriver = Item(
-            type=ItemType.PHYSICAL,
-            price=10.0,
-            name='Screwdriver'
-        )
-        gogol_music = Item(
-            type=ItemType.SUBSCRIPTION,
-            price=5.0,
-            name='Gogol Music'
-        )
-        customer = Customer(
-            name='John',
-            surname='Smith',
-            email_address='john.smith@gogol.eus'
-        )
-        address = Address(
-            zip_code='46001',
-            street='C/ xxx'
-        )
+    def test_processing_the_payment_of_an_order_containing_all_types_of_item(self):
         order = Order(
-            customer=customer,
-            shipping_address=address,
-            billing_address=address,
+            customer=self.customer,
+            shipping_address=self.address,
+            billing_address=self.address,
             items=[
-                OrderItems(item=screwdriver, quantity=2),
-                OrderItems(item=gogol_music, quantity=2),
+                OrderItems(item=self.screwdriver, quantity=2),
+                OrderItems(item=self.gogol_music, quantity=2),
+                OrderItems(item=self.book, quantity=2),
             ]
         )
         payment = Payment(
@@ -54,19 +36,52 @@ class TestCombinedItemOrderPayments(unittest.TestCase):
         payment.pay()
 
         assert payment.is_paid
-        assert payment.order.subtotal == 30.0
-        assert payment.order.items[0].item == screwdriver
-        assert payment.order.items[1].item == gogol_music
+        assert payment.order.subtotal == 40.0
+        assert payment.order.items[0].item == self.screwdriver
+        assert payment.order.items[1].item == self.gogol_music
+        assert payment.order.items[2].item == self.book
 
-        latest_shipping_label = shipping_labels.latest()
-        assert latest_shipping_label == ShippingLabel(
-            shipping_address=address,
-            customer=customer
-        )
+        assert self.regular_shipping_label in shipping_labels.pending_labels
+        assert self.tax_exempt_shipping_label in shipping_labels.pending_labels
 
         assert email_sender.latest() == Email.from_template(
             template=EmailTemplate.SUBSCRIPTION_ACTIVATION,
             order=order
         )
 
-        assert gogol_music in subscription_service.activated_subscriptions_for_customer(customer)
+        assert self.gogol_music in subscription_service.activated_subscriptions_for_customer(self.customer)
+
+    def setUp(self):
+        self.screwdriver = Item(
+            type=ItemType.PHYSICAL,
+            price=10.0,
+            name='Screwdriver'
+        )
+        self.gogol_music = Item(
+            type=ItemType.SUBSCRIPTION,
+            price=5.0,
+            name='Gogol Music'
+        )
+        self.book = Item(
+            type=ItemType.BOOK,
+            price=5.0,
+            name='Midnight'
+        )
+        self.customer = Customer(
+            name='John',
+            surname='Smith',
+            email_address='john.smith@gogol.eus'
+        )
+        self.address = Address(
+            zip_code='46001',
+            street='C/ xxx'
+        )
+        self.tax_exempt_shipping_label = ShippingLabel(
+            shipping_address=self.address,
+            customer=self.customer,
+            is_tax_exempt=True
+        )
+        self.regular_shipping_label = ShippingLabel(
+            shipping_address=self.address,
+            customer=self.customer
+        )
