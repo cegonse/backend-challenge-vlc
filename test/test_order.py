@@ -129,3 +129,20 @@ class TestOrder(unittest.TestCase):
         )
 
         assert order.contains_books is True
+
+    def test_order_reports_it_contains_a_digital_item(self):
+        song = Item(
+            type=ItemType.DIGITAL_MEDIA,
+            price=10.0,
+            name='Imagine'
+        )
+        order = Order(
+            customer=self.customer,
+            shipping_address=self.address,
+            billing_address=self.address,
+            items=[
+                OrderItems(item=song, quantity=3)
+            ]
+        )
+
+        assert order.contains_digital_media is True
