@@ -5,7 +5,7 @@
 Total time from start to finish: around 3 hours.
 
 Some of the details of my implementation of the backend challenge:
-* I've opted to do a fresh start on my code, basing the classes from the boostrap code. These classes have helped me have a better
+* I've opted to do a fresh start on my code, based on the classes from the boostrap code. These classes have helped me have a better
   overall picture of the domain, which I have tried to express in the diagram below.
 * The first step was setting up the CI pipeline for the project, and defining the requirements as user stories. I've opted to use
   the [Minimum Value Increments](https://www.codurance.com/publications/2020/01/27/minimum-valuable-increment), a framework proposed by the people at Codurance to define value which I find really interesting
