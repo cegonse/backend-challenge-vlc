@@ -1,11 +1,16 @@
 from enum import Enum
 
+from src import email_sender
 from src import shipping_labels
+from src import subscription_service
+from src.email_sender import Email
+from src.email_sender import EmailTemplate
 from src.shipping_labels import ShippingLabel
 
 
 class ItemType(Enum):
     PHYSICAL = 'physical'
+    SUBSCRIPTION = 'subscription'
 
 
 class Item:
@@ -16,7 +21,8 @@ class Item:
 
 
 class Customer:
-    def __init__(self, name, surname):
+    def __init__(self, name, surname, email_address):
+        self.email_address = email_address
         self.surname = surname
         self.name = name
 
@@ -35,6 +41,14 @@ class Order:
         self.customer = customer
 
     @property
+    def contains_subscriptions(self):
+        return self.__contains_item_of_type(ItemType.SUBSCRIPTION)
+
+    @property
+    def contains_physical_items(self):
+        return self.__contains_item_of_type(ItemType.PHYSICAL)
+
+    @property
     def subtotal(self):
         total = 0.0
 
@@ -42,6 +56,13 @@ class Order:
             total = total + order_items.quantity * order_items.item.price
 
         return total
+
+    def __contains_item_of_type(self, type):
+        for order_items in self.items:
+            if order_items.item.type == type:
+                return True
+
+        return False
 
 
 class OrderItems:
@@ -59,10 +80,32 @@ class Payment:
     def pay(self):
         self.is_paid = True
 
+        if self.order.contains_physical_items:
+            self.__postprocess_physical_items()
+
+        if self.order.contains_subscriptions:
+            self.__postprocess_digital_subscriptions()
+
+    def __postprocess_digital_subscriptions(self):
+        email_sender.send(
+            Email.from_template(
+                template=EmailTemplate.SUBSCRIPTION_ACTIVATION,
+                order=self.order
+            )
+        )
+        self.__activate_digital_subscriptions()
+
+    def __postprocess_physical_items(self):
         shipping_labels.add(ShippingLabel(
             customer=self.order.customer,
             shipping_address=self.order.shipping_address
         ))
+
+    def __activate_digital_subscriptions(self):
+        digital_subscriptions = [order_item.item for order_item in self.order.items if order_item.item.type == ItemType.SUBSCRIPTION]
+
+        for subscription in digital_subscriptions:
+            subscription_service.activate_subscription(self.order.customer, subscription)
 
 
 class CreditCard:

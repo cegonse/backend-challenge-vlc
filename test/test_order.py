@@ -12,7 +12,8 @@ class TestOrder(unittest.TestCase):
     def setUp(self):
         self.customer = Customer(
             name='John',
-            surname='Smith'
+            surname='Smith',
+            email_address='john.smith@gogol.kr'
         )
         self.address = Address(
             zip_code='46001',
@@ -43,7 +44,6 @@ class TestOrder(unittest.TestCase):
             price=10.0,
             name='Screwdriver'
         )
-
         order = Order(
             customer=self.customer,
             shipping_address=self.address,
@@ -61,7 +61,6 @@ class TestOrder(unittest.TestCase):
             price=10.0,
             name='Screwdriver'
         )
-
         hammer = Item(
             type=ItemType.PHYSICAL,
             price=100.0,
@@ -79,3 +78,37 @@ class TestOrder(unittest.TestCase):
         )
 
         assert order.subtotal == 130.0
+
+    def test_order_reports_it_contains_a_physical_item(self):
+        screwdriver = Item(
+            type=ItemType.PHYSICAL,
+            price=10.0,
+            name='Screwdriver'
+        )
+        order = Order(
+            customer=self.customer,
+            shipping_address=self.address,
+            billing_address=self.address,
+            items=[
+                OrderItems(item=screwdriver, quantity=3)
+            ]
+        )
+
+        assert order.contains_physical_items is True
+
+    def test_order_reports_it_contains_a_digital_subscription_item(self):
+        screwdriver = Item(
+            type=ItemType.SUBSCRIPTION,
+            price=10.0,
+            name='Gogol Music'
+        )
+        order = Order(
+            customer=self.customer,
+            shipping_address=self.address,
+            billing_address=self.address,
+            items=[
+                OrderItems(item=screwdriver, quantity=3)
+            ]
+        )
+
+        assert order.contains_subscriptions is True
