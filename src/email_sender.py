@@ -3,6 +3,8 @@ from enum import Enum
 
 class EmailTemplate(Enum):
     SUBSCRIPTION_ACTIVATION = 'subscription_activation'
+    DIGITAL_MEDIA_ACCESS = 'digital_media_access'
+    DISCOUNT_VOUCHER = 'digital_media_access'
 
 
 class Email:
@@ -18,12 +20,12 @@ class Email:
         return isinstance(other, Email) and other.__dict__ ==  self.__dict__
 
 
-emails = []
+sent_emails = []
 
 
 def send(email):
-    emails.append(email)
+    sent_emails.append(email)
 
 
 def latest():
-    return emails[-1]
+    return sent_emails[-1]

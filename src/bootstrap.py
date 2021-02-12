@@ -12,6 +12,7 @@ class ItemType(Enum):
     PHYSICAL = 'physical'
     SUBSCRIPTION = 'subscription'
     BOOK = 'book'
+    DIGITAL_MEDIA = 'digital_media'
 
 
 class Item:
@@ -54,6 +55,10 @@ class Order:
         return self.__contains_item_of_type(ItemType.BOOK)
 
     @property
+    def contains_digital_media(self):
+        return self.__contains_item_of_type(ItemType.DIGITAL_MEDIA)
+
+    @property
     def subtotal(self):
         total = 0.0
 
@@ -94,14 +99,11 @@ class Payment:
         if self.order.contains_books:
             self.__postprocess_books()
 
+        if self.order.contains_digital_media:
+            self.__postprocess_digital_media()
+
     def __postprocess_digital_subscriptions(self):
-        email_sender.send(
-            Email.from_template(
-                template=EmailTemplate.SUBSCRIPTION_ACTIVATION,
-                order=self.order
-            )
-        )
-        self.__activate_digital_subscriptions()
+        self.__send_email_from_template(EmailTemplate.SUBSCRIPTION_ACTIVATION)
 
     def __postprocess_physical_items(self):
         self.__generate_shipping_label(is_tax_exempt=False)
@@ -109,12 +111,25 @@ class Payment:
     def __postprocess_books(self):
         self.__generate_shipping_label(is_tax_exempt=True)
 
+    def __postprocess_digital_media(self):
+        self.__send_email_from_template(EmailTemplate.DIGITAL_MEDIA_ACCESS)
+        self.__send_email_from_template(EmailTemplate.DISCOUNT_VOUCHER)
+
     def __generate_shipping_label(self, is_tax_exempt):
         shipping_labels.add(ShippingLabel(
             customer=self.order.customer,
             shipping_address=self.order.shipping_address,
             is_tax_exempt=is_tax_exempt
         ))
+
+    def __send_email_from_template(self, template):
+        email_sender.send(
+            Email.from_template(
+                template=template,
+                order=self.order
+            )
+        )
+        self.__activate_digital_subscriptions()
 
     def __activate_digital_subscriptions(self):
         digital_subscriptions = [order_item.item for order_item in self.order.items if order_item.item.type == ItemType.SUBSCRIPTION]

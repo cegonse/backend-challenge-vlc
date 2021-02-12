@@ -1,7 +1,6 @@
 import unittest
 
 from src import email_sender
-from src import subscription_service
 from src.bootstrap import Address
 from src.bootstrap import CreditCard
 from src.bootstrap import Customer
@@ -14,15 +13,15 @@ from src.email_sender import Email
 from src.email_sender import EmailTemplate
 
 
-class TestSubscriptionPayments(unittest.TestCase):
-    def test_processing_the_payment_for_an_order_containing_multiple_subscriptions(self):
+class TestDigitalMediaOrderPayments(unittest.TestCase):
+    def test_processing_the_payment_for_an_order_containing_multiple_digital_media(self):
         order = Order(
             customer=self.customer,
             shipping_address=self.address,
             billing_address=self.address,
             items=[
-                OrderItems(item=self.gogol_music, quantity=1),
-                OrderItems(item=self.spotofy, quantity=1)
+                OrderItems(item=self.avator, quantity=2),
+                OrderItems(item=self.mission_possible, quantity=2),
             ]
         )
         payment = Payment(
@@ -33,28 +32,23 @@ class TestSubscriptionPayments(unittest.TestCase):
         payment.pay()
 
         assert payment.is_paid
-        assert payment.order.subtotal == 10.0
-        assert payment.order.items[0].item == self.gogol_music
-        assert payment.order.items[1].item == self.spotofy
+        assert payment.order.subtotal == 30.0
+        assert payment.order.items[0].item == self.avator
+        assert payment.order.items[1].item == self.mission_possible
 
-        assert email_sender.latest() == Email.from_template(
-            template=EmailTemplate.SUBSCRIPTION_ACTIVATION,
-            order=order
-        )
-
-        assert self.gogol_music in subscription_service.activated_subscriptions_for_customer(self.customer)
-        assert self.spotofy in subscription_service.activated_subscriptions_for_customer(self.customer)
+        self.assert_email_was_sent_generated_from_template(order, EmailTemplate.DIGITAL_MEDIA_ACCESS)
+        self.assert_email_was_sent_generated_from_template(order, EmailTemplate.DISCOUNT_VOUCHER)
 
     def setUp(self):
-        self.gogol_music = Item(
-            type=ItemType.SUBSCRIPTION,
-            price=5.0,
-            name='Gogol Music'
+        self.avator = Item(
+            type=ItemType.DIGITAL_MEDIA,
+            price=10.0,
+            name='Avator'
         )
-        self.spotofy = Item(
-            type=ItemType.SUBSCRIPTION,
+        self.mission_possible = Item(
+            type=ItemType.DIGITAL_MEDIA,
             price=5.0,
-            name='Spotofy'
+            name='Mission Possible'
         )
         self.customer = Customer(
             name='John',
@@ -65,3 +59,6 @@ class TestSubscriptionPayments(unittest.TestCase):
             zip_code='46001',
             street='C/ xxx'
         )
+
+    def assert_email_was_sent_generated_from_template(self, order, template):
+        assert Email.from_template(template=template, order=order) in email_sender.sent_emails

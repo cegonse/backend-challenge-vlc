@@ -17,7 +17,7 @@ from src.shipping_labels import ShippingLabel
 
 
 class TestCombinedItemOrderPayments(unittest.TestCase):
-    def test_processing_the_payment_of_an_order_containing_all_types_of_item(self):
+    def test_processing_the_payment_of_an_order_containing_all_types_of_items(self):
         order = Order(
             customer=self.customer,
             shipping_address=self.address,
@@ -26,6 +26,7 @@ class TestCombinedItemOrderPayments(unittest.TestCase):
                 OrderItems(item=self.screwdriver, quantity=2),
                 OrderItems(item=self.gogol_music, quantity=2),
                 OrderItems(item=self.book, quantity=2),
+                OrderItems(item=self.movie, quantity=1)
             ]
         )
         payment = Payment(
@@ -36,18 +37,18 @@ class TestCombinedItemOrderPayments(unittest.TestCase):
         payment.pay()
 
         assert payment.is_paid
-        assert payment.order.subtotal == 40.0
+        assert payment.order.subtotal == 50.0
         assert payment.order.items[0].item == self.screwdriver
         assert payment.order.items[1].item == self.gogol_music
         assert payment.order.items[2].item == self.book
+        assert payment.order.items[3].item == self.movie
 
         assert self.regular_shipping_label in shipping_labels.pending_labels
         assert self.tax_exempt_shipping_label in shipping_labels.pending_labels
 
-        assert email_sender.latest() == Email.from_template(
-            template=EmailTemplate.SUBSCRIPTION_ACTIVATION,
-            order=order
-        )
+        self.assert_email_was_sent_generated_from_template(order, EmailTemplate.SUBSCRIPTION_ACTIVATION)
+        self.assert_email_was_sent_generated_from_template(order, EmailTemplate.DIGITAL_MEDIA_ACCESS)
+        self.assert_email_was_sent_generated_from_template(order, EmailTemplate.DISCOUNT_VOUCHER)
 
         assert self.gogol_music in subscription_service.activated_subscriptions_for_customer(self.customer)
 
@@ -67,6 +68,11 @@ class TestCombinedItemOrderPayments(unittest.TestCase):
             price=5.0,
             name='Midnight'
         )
+        self.movie = Item(
+            type=ItemType.DIGITAL_MEDIA,
+            price=10.0,
+            name='Mission Possible'
+        )
         self.customer = Customer(
             name='John',
             surname='Smith',
@@ -85,3 +91,6 @@ class TestCombinedItemOrderPayments(unittest.TestCase):
             shipping_address=self.address,
             customer=self.customer
         )
+
+    def assert_email_was_sent_generated_from_template(self, order, template):
+        assert Email.from_template(template=template, order=order) in email_sender.sent_emails
