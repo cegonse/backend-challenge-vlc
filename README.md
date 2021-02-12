@@ -28,7 +28,7 @@ Some of the details of my implementation of the backend challenge:
 
 # YouTube Video
 
-*Uploading!*
+https://youtu.be/YD5c0XflE1k
 
 # Running the project
 
