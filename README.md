@@ -1,29 +1,42 @@
-# A small journey to improve our payment stream
+![CI badge](https://github.com/cegonse/backend-challenge-vlc/workflows/Python%20package/badge.svg)
 
-This is the Backend challenge for Creditas Valencia.
+# Summary
 
-You already spent a whole week discovering what the existing payment stream is like. After your investigation it turns out the sytem is fragile because it requires large modifications whenever a new item is sent or removed. The code was written by a previous team and you suspect they didn't follow good practices.
+Total time from start to finish: around 3 hours.
 
-After some technical discovery with other members of the team you decide together that the payment system needs to evolve and it should be able to handle the following scenarios:
+Some of the details of my implementation of the backend challenge:
+* I've opted to do a fresh start on my code, basing the classes from the boostrap code. These classes have helped me have a better
+  overall picture of the domain, which I have tried to express in the diagram below.
+* The first step was setting up the CI pipeline for the project, and defining the requirements as user stories. I've opted to use
+  the [Minimum Value Increments](https://www.codurance.com/publications/2020/01/27/minimum-valuable-increment), a framework proposed by the people at Codurance to define value which I find really interesting
+  and have been trying to use lately.
+* For all classes, I've used named arguments instead of attribute dicts. This was just due to personal preference.
+* Processing payments of orders with different types of items is supported. I have assumed the different requirements are not contradicting themselves.
+  For example, in case you purchase a physical item and a digital media item, you will be charged with the total sum and receive the corresponding parcel
+  for the physical item (shipping label) and the emails associated to the digital media item (discount voucher and confirmation).
+* I have assumed the tax exemption on the books is a shipping issue. At first, I thought it should be part of the payment. For example, if you purchase
+  a mobile phone and a book, you would be charged 21% VAT for the mobile phone and 0% VAT for the book, affecting the total sum. But in the end, since the
+  requirement only mentioned the shipping label I kept it like that.
+* I have recorded all the session as a YouTube video, so you can hear first hand what's behind the decisions I've taken to solve each user story.
+  The reason why I've decided to do this is because during the technical interviews I've been able to do to other candidates, being able to speak with them
+  and hear their reasoning while they were conducting the challenge was really enlightning to better understand their thought process. Sadly, we cannot do
+  this now due to COVID but I think this might be quite close.
 
-+ If the payment is for a physical item, you must generate one `shipping label` for it to be placed in the shipping box.
-+ If payment is for a subscription service, you must activate the subscription, and notify the user via email about this.
-+ If the payment is for an ordinary book, you must generate a `shipping label` with a notification that it is a tax-exempt item.
-+ If the payment is for any digital media (music, video), in addition to sending the description of the purchase by email to the buyer, grant a discount voucher of 10% to the buyer associated with the payment.
+# Domain model
 
-## Tips
+![Domain model](media/domain_model.png?raw=true)
 
-* We value [Extremme Programming](http://www.extremeprogramming.org/) practices and [rules](http://www.extremeprogramming.org/rules.html).
-* Feel free to modify/refactor the bootstrap files if you think it's necessary.
-* Don’t over-engineer your solution! Your Extremme Programming team loves clean and cohesive code, so try to keep it simple.
-* It’s ok if you use third-party libraries, but be aware that your team prefers a vanilla solution.
-* The challenge **does not require a final working code necessarily**. We want to understand how you solve problems. If you have any questions or doubts, feel free to ask.
-* Describe your modifications and reasoning in a separate markdown file.
-* What language? Kotlin, Ruby, Python, Java or PHP.
+# YouTube Video
 
+*Uploading!*
 
-## Out of scope
+# Running the project
 
-* **It is not necessary** to create the implementations for sending emails, to print the shipping label, etc. For these cases (email, shipping label) **only create method calls**, to indicate that it would be the place where the sending would take place.
-* **It is not necessary** to use a databae. Although in real life you would, for the challenge, in-memory data is enough.
-* **It is not necessary** to dockerise your application.
+The requirements to run the project are:
+* Python 3.7+
+* Pytest
+
+To run the unit tests, run in a terminal:
+```
+pytest .
+```
