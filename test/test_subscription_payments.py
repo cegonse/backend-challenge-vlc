@@ -16,26 +16,12 @@ from src.email_sender import EmailTemplate
 
 class TestSubscriptionPayments(unittest.TestCase):
     def test_processing_the_payment_for_an_order_containing_multiple_physical_items(self):
-        gogol_music = Item(
-            type=ItemType.SUBSCRIPTION,
-            price=5.0,
-            name='Gogol Music'
-        )
-        customer = Customer(
-            name='John',
-            surname='Smith',
-            email_address='john.smith@gogol.eus'
-        )
-        address = Address(
-            zip_code='46001',
-            street='C/ xxx'
-        )
         order = Order(
-            customer=customer,
-            shipping_address=address,
-            billing_address=address,
+            customer=self.customer,
+            shipping_address=self.address,
+            billing_address=self.address,
             items=[
-                OrderItems(item=gogol_music, quantity=1)
+                OrderItems(item=self.gogol_music, quantity=1)
             ]
         )
         payment = Payment(
@@ -47,11 +33,27 @@ class TestSubscriptionPayments(unittest.TestCase):
 
         assert payment.is_paid
         assert payment.order.subtotal == 5.0
-        assert payment.order.items[0].item == gogol_music
+        assert payment.order.items[0].item == self.gogol_music
 
         assert email_sender.latest() == Email.from_template(
             template=EmailTemplate.SUBSCRIPTION_ACTIVATION,
             order=order
         )
 
-        assert gogol_music in subscription_service.activated_subscriptions_for_customer(customer)
+        assert self.gogol_music in subscription_service.activated_subscriptions_for_customer(self.customer)
+
+    def setUp(self):
+        self.gogol_music = Item(
+            type=ItemType.SUBSCRIPTION,
+            price=5.0,
+            name='Gogol Music'
+        )
+        self.customer = Customer(
+            name='John',
+            surname='Smith',
+            email_address='john.smith@gogol.eus'
+        )
+        self.address = Address(
+            zip_code='46001',
+            street='C/ xxx'
+        )

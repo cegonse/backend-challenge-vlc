@@ -11,6 +11,7 @@ from src.shipping_labels import ShippingLabel
 class ItemType(Enum):
     PHYSICAL = 'physical'
     SUBSCRIPTION = 'subscription'
+    BOOK = 'book'
 
 
 class Item:
@@ -47,6 +48,10 @@ class Order:
     @property
     def contains_physical_items(self):
         return self.__contains_item_of_type(ItemType.PHYSICAL)
+
+    @property
+    def contains_books(self):
+        return self.__contains_item_of_type(ItemType.BOOK)
 
     @property
     def subtotal(self):
@@ -86,6 +91,9 @@ class Payment:
         if self.order.contains_subscriptions:
             self.__postprocess_digital_subscriptions()
 
+        if self.order.contains_books:
+            self.__postprocess_books()
+
     def __postprocess_digital_subscriptions(self):
         email_sender.send(
             Email.from_template(
@@ -96,9 +104,16 @@ class Payment:
         self.__activate_digital_subscriptions()
 
     def __postprocess_physical_items(self):
+        self.__generate_shipping_label(is_tax_exempt=False)
+
+    def __postprocess_books(self):
+        self.__generate_shipping_label(is_tax_exempt=True)
+
+    def __generate_shipping_label(self, is_tax_exempt):
         shipping_labels.add(ShippingLabel(
             customer=self.order.customer,
-            shipping_address=self.order.shipping_address
+            shipping_address=self.order.shipping_address,
+            is_tax_exempt=is_tax_exempt
         ))
 
     def __activate_digital_subscriptions(self):
