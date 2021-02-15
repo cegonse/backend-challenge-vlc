@@ -1,4 +1,4 @@
-![CI badge](https://github.com/cegonse/backend-challenge-vlc/workflows/Python%20package/badge.svg)
+![CI badge](https://github.com/cegonse/backend-challenge-vlc/workflows/Unit%20tests/badge.svg)
 
 # Summary
 
